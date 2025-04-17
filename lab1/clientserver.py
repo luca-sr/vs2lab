@@ -8,7 +8,7 @@ import socket
 import const_cs
 from context import lab_logging
 
-# Initialize logging for the lab
+
 d = lab_logging.setup(stream_level=logging.INFO)
 
 class Server:
@@ -21,7 +21,7 @@ class Server:
         self.sock.bind((const_cs.HOST, const_cs.PORT))
         self.sock.settimeout(3)
         self._logger.info(f"Server bound to socket {self.sock}")
-        # In-memory phonebook
+        
         self.phonebook = {
             "Alice": "1234",
             "Bob": "5678",

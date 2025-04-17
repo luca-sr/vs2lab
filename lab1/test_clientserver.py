@@ -10,7 +10,6 @@ lab_logging.setup(stream_level=logging.INFO)
 logger = logging.getLogger("vs2lab.lab1.test_clientserver")
 
 class TestClientServer(unittest.TestCase):
-    """Test suite for client-server interaction"""
 
     _server = clientserver.Server()
     _server_thread = threading.Thread(target=_server.serve)
@@ -19,7 +18,7 @@ class TestClientServer(unittest.TestCase):
     def setUpClass(cls):
         logger.info("Setting up class: starting server thread...")
         cls._server_thread.start()
-        time.sleep(1)  # Give server time to bind and start listening
+        time.sleep(1)
 
     def setUp(self):
         logger.info("Setting up test: creating new client...")
