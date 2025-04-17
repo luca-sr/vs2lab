@@ -12,7 +12,6 @@ from context import lab_logging
 d = lab_logging.setup(stream_level=logging.INFO)
 
 class Server:
-    """The telephone directory server."""
     _logger = logging.getLogger("vs2lab.lab1.clientserver.Server")
     _serving = True
 
@@ -30,7 +29,6 @@ class Server:
         }
 
     def serve(self):
-        """Start serving incoming phonebook requests."""
         self.sock.listen(1)
         self._logger.info("Server listening for connections...")
         while self._serving:
@@ -65,7 +63,6 @@ class Server:
 
 
 class Client:
-    """The telephone directory client."""
     _logger = logging.getLogger("vs2lab.lab1.clientserver.Client")
 
     def __init__(self):
@@ -74,7 +71,6 @@ class Client:
         self._logger.info(f"Client connected to socket {self.sock}")
 
     def call(self, command="GET Alice"):
-        """Send a command to the server and return its response."""
         self._logger.info(f"Sending command: '{command}'")
         self.sock.send(command.encode('utf-8'))
         data = self.sock.recv(4096)
@@ -84,6 +80,5 @@ class Client:
         return response
 
     def close(self):
-        """Close the client socket."""
         self.sock.close()
         self._logger.info("Client socket closed.")
