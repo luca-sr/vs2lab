@@ -17,34 +17,36 @@ class Client:
         self.chan = lab_channel.Channel()
         self.client = self.chan.join('client')
         self.server = None
-        self.running = True  # new_code
-        self.callback = None  # new_code
+        self.running = True  
+        self.callback = None  
 
     def run(self):
         self.chan.bind(self.client)
-        self.server = self.chan.subgroup('server')
-        threading.Thread(target=self.listen_for_results).start()  # new_code
+        self.server = self.chan.subgroup('server')  
 
     def stop(self):
-        self.running = False  # new_code
+        self.running = False  
         self.chan.leave('client')
 
-    def append(self, data, db_list, callback):  # new_code
+    def append(self, data, db_list, callback):  
         assert isinstance(db_list, DBList)
-        self.callback = callback  # new_code
-        msg = (constRPC.APPEND, data, db_list)  # new_code
-        self.chan.send_to(self.server, msg)  # new_code
-        ack = self.chan.receive_from(self.server)  # new_code
-        print("ACK received, continue working...")  # new_code
+        self.callback = callback  
+        msg = (constRPC.APPEND, data, db_list)  
+        self.chan.send_to(self.server, msg)  
+        ack = self.chan.receive_from(self.server)
+        if (ack[1] == "ACK"):
+            print("ACK received, continue working...")  
+            threading.Thread(target=self.listen_for_results).start()
+        print(ack[1])
 
-    def listen_for_results(self):  # new_code
-        while self.running:  # new_code
-            msg = self.chan.receive_from_any(timeout=1)  # new_code
-            if msg and msg[1][0] == 'RESULT':  # new_code
-                _, result = msg[1]  # new_code
-                if self.callback:  # new_code
-                    self.callback(result)  # new_code
-                    self.callback = None  # new_code
+    def listen_for_results(self):  
+        while self.running:  
+            msg = self.chan.receive_from_any(timeout=1)  
+            if msg and msg[1][0] == 'RESULT':  
+                _, result = msg[1]  
+                if self.callback:  
+                    self.callback(result)  
+                    self.callback = None  
 
 
 
@@ -67,13 +69,13 @@ class Server:
             msgreq = self.chan.receive_from_any(self.timeout)
             if msgreq is not None:
                 client, msgrpc = msgreq
-                self.chan.send_to({client}, ('ACK',))  # new_code
-                threading.Thread(target=self.process_request, args=(client, msgrpc)).start()  # new_code
+                self.chan.send_to({client}, ('ACK'))  
+                threading.Thread(target=self.process_request, args=(client, msgrpc)).start()  
 
-    def process_request(self, client, msgrpc):  # new_code
-        time.sleep(10)  # new_code
-        if constRPC.APPEND == msgrpc[0]:  # new_code
-            result = self.append(msgrpc[1], msgrpc[2])  # new_code
-            self.chan.send_to({client}, ('RESULT', result))  # new_code
+    def process_request(self, client, msgrpc):  
+        time.sleep(10)  
+        if constRPC.APPEND == msgrpc[0]:  
+            result = self.append(msgrpc[1], msgrpc[2])  
+            self.chan.send_to({client}, ('RESULT', result))  
 
 
