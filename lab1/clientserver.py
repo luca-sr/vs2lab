@@ -39,6 +39,7 @@ class Server:
                     data = conn.recv(1024)
                     if not data:
                         break
+
                     request = data.decode('utf-8').strip()
                     self._logger.info(f"Received request: '{request}'")
 
@@ -78,6 +79,12 @@ class Client:
         self._logger.info(f"Received response: '{response}'")
         print(response)
         return response
+    
+    def get(self, name):
+        return self.call("GET " + name)
+    
+    def getall(self):
+        return self.call("GETALL")
 
     def close(self):
         self.sock.close()
