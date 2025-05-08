@@ -228,3 +228,13 @@ ein nützliches Beispiel, an dem Sie sich orientieren können.
 
 Die Abgabe erfolgt durch Abnahme durch einen Dozenten. Packen Sie den kompletten
 Code zudem als Zip Archiv und laden Sie dieses im ILIAS hoch.
+
+
+pipenv run python reducer.py 1
+pipenv run python reducer.py 2
+
+pipenv run python mapper.py 1
+pipenv run python mapper.py 2
+pipenv run python mapper.py 3
+
+pipenv run python splitter.py
