@@ -132,46 +132,40 @@ class ChordNode:
         self.logger.info("ChordNode {:04n} ready.".format(self.node_id))
 
     def run(self):
-        while True:  # Start node operation loop
-            message = self.channel.receive_from_any()  # Wait for any request
-            sender: str = message[0]  # Identify the sender
-            request = message[1]  # And the actual request
+        while True:
+            message = self.channel.receive_from_any()
+            sender: str = message[0]
+            request = message[1]
 
-            # If sender is a node (that stays in the ring) then update known nodes
             if request[0] != constChord.LEAVE and self.channel.channel.sismember('node', sender):
-                self.add_node(sender)  # remember sender node
+                self.add_node(sender)
 
-            if request[0] == constChord.STOP:  # this node is requested to shutdown
-                self.logger.debug("Node {:04n} received STOP from {:04n}."
-                                  .format(self.node_id, int(sender)))
+            if request[0] == constChord.STOP:
+                self.logger.debug("Node {:04n} received STOP from {:04n}.".format(self.node_id, int(sender)))
                 break
 
-            if request[0] == constChord.LOOKUP_REQ:  # A lookup request
-                self.logger.info("Node {:04n} received LOOKUP {:04n} from {:04n}."
-                                 .format(self.node_id, int(request[1]), int(sender)))
+            if request[0] == constChord.LOOKUP_REQ:
+                key = request[1]
+                origin = request[2]
 
-                # look up and return local successor 
-                next_id: int = self.local_successor_node(request[1])
-                self.channel.send_to([sender], (constChord.LOOKUP_REP, next_id))
+                self.logger.info("Node {:04n} received LOOKUP {:04n} from {:04n} (origin {:04n})."
+                                 .format(self.node_id, int(key), int(sender), int(origin)))
 
-                # Finally do a sanity check
-                if not self.channel.exists(next_id):  # probe for existence
-                    self.delete_node(next_id)  # purge disappeared node
+                next_id = self.local_successor_node(key)
+
+                if next_id == self.node_id:
+                    self.logger.info("Node {:04n} resolved key {:04n}.".format(self.node_id, key))
+                    self.channel.send_to([origin], (constChord.LOOKUP_REP, self.node_id))
+                else:
+                    self.channel.send_to([str(next_id)], (constChord.LOOKUP_REQ, key, origin))
 
             elif request[0] == constChord.JOIN:
-                # Join request (the node was already registered above)
-                self.logger.debug("Node {:04n} received JOIN from {:04n}."
-                                  .format(self.node_id, int(sender)))
-                # we don't care for storage re-location in this example
+                self.logger.debug("Node {:04n} received JOIN from {:04n}.".format(self.node_id, int(sender)))
                 continue
-            elif request[0] == constChord.LEAVE:  # Leave request
-                self.logger.info("Node {:04n} received LEAVE from {:04n}."
-                                 .format(self.node_id, int(sender)))
-                self.delete_node(sender)  # update known nodes
+            elif request[0] == constChord.LEAVE:
+                self.logger.info("Node {:04n} received LEAVE from {:04n}.".format(self.node_id, int(sender)))
+                self.delete_node(sender)
 
-            self.recompute_finger_table()  # adjust finger-table based on updated node set
+            self.recompute_finger_table()
 
-        # print finger table status before termination
-        print("FT[{:04n}]: {}"
-              .format(self.node_id, ["{:04n}"
-                      .format(finger_node) for finger_node in self.finger_table]))
+        print("FT[{:04n}]: {}".format(self.node_id, ["{:04n}".format(f) for f in self.finger_table]))
