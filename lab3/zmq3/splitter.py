@@ -5,7 +5,7 @@ import constPipe
 
 context = zmq.Context()
 socket = context.socket(zmq.PUSH)
-socket.bind(f"tcp://*:{constPipe.SPLITTER_OUT_PORT}")  #new_code
+socket.bind(f"tcp://*:{constPipe.SPLITTER_OUT_PORT}")
 
 sentences = [
     "Hello world",
