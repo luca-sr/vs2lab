@@ -109,3 +109,5 @@ if __name__ == "__main__":  # if script is started from command line
     # wait for node processes to finish
     for nodeproc in children:
         nodeproc.join()
+
+
